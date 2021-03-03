@@ -1,0 +1,2 @@
+include ':app', ':album_helper'
+rootProject.name='My Application'
