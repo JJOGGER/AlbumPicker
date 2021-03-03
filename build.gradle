@@ -5,6 +5,9 @@ buildscript {
     repositories {
         google()
         jcenter()
+        maven { url "https://maven.google.com" }
+        //使用下面两个阿里镜像依赖地址替换jcenter
+        maven{ url'http://maven.aliyun.com/nexus/content/groups/public/' }
 
     }
     dependencies {
@@ -19,6 +22,9 @@ allprojects {
     repositories {
         google()
         jcenter()
+        maven { url "https://maven.google.com" }
+        //使用下面两个阿里镜像依赖地址替换jcenter
+        maven{ url'http://maven.aliyun.com/nexus/content/groups/public/' }
 
     }
 }

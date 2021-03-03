@@ -14,6 +14,7 @@ object SupportType{
     }
 
     fun getSupportImageType(): IntArray? {
-        return intArrayOf(31, 32, 33, 34, 37)
+        return intArrayOf(MediaFile.FILE_TYPE_JPEG, MediaFile.FILE_TYPE_GIF,
+            MediaFile.FILE_TYPE_PNG , MediaFile.FILE_TYPE_BMP  , MediaFile.FILE_TYPE_HEIC )
     }
 }

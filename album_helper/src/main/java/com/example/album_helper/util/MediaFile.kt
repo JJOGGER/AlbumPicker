@@ -78,23 +78,23 @@ object MediaFile{
     }
 
     fun isAudioFileType(fileType: Int): Boolean {
-        return fileType >= 1 && fileType <= 10 || fileType >= 11 && fileType <= 13
+        return fileType >= FIRST_AUDIO_FILE_TYPE  && fileType <= LAST_AUDIO_FILE_TYPE  || fileType >= FIRST_MIDI_FILE_TYPE  && fileType <= LAST_MIDI_FILE_TYPE
     }
 
     fun isVideoFileType(fileType: Int): Boolean {
-        return fileType >= 21 && fileType <= 30 || fileType >= 200 && fileType <= 200
+        return fileType >= FIRST_VIDEO_FILE_TYPE  && fileType <= LAST_VIDEO_FILE_TYPE  || fileType >= FIRST_VIDEO_FILE_TYPE2  && fileType <= LAST_VIDEO_FILE_TYPE2
     }
 
     fun isImageFileType(fileType: Int): Boolean {
-        return fileType >= 31 && fileType <= 36
+        return fileType >= FIRST_IMAGE_FILE_TYPE  && fileType <= LAST_IMAGE_FILE_TYPE
     }
 
     fun isPlayListFileType(fileType: Int): Boolean {
-        return fileType >= 41 && fileType <= 44
+        return fileType >= FIRST_PLAYLIST_FILE_TYPE  && fileType <= LAST_PLAYLIST_FILE_TYPE
     }
 
     fun isDrmFileType(fileType: Int): Boolean {
-        return fileType >= 51 && fileType <= 51
+        return fileType >= FIRST_DRM_FILE_TYPE  && fileType <= LAST_DRM_FILE_TYPE
     }
 
     fun getFileType(path: String): MediaFileType? {
@@ -136,69 +136,69 @@ object MediaFile{
     }
 
     init {
-        addFileType("MP3", 1, "audio/mpeg")
-        addFileType("MPGA", 1, "audio/mpeg")
-        addFileType("M4A", 2, "audio/mp4")
-        addFileType("WAV", 3, "audio/x-wav")
-        addFileType("AMR", 4, "audio/amr")
-        addFileType("AWB", 5, "audio/amr-wb")
-        addFileType("WMA", 6, "audio/x-ms-wma")
-        addFileType("OGG", 7, "audio/ogg")
-        addFileType("OGG", 7, "application/ogg")
-        addFileType("OGA", 7, "application/ogg")
-        addFileType("AAC", 8, "audio/aac")
-        addFileType("AAC", 8, "audio/aac-adts")
-        addFileType("MKA", 9, "audio/x-matroska")
-        addFileType("MID", 11, "audio/midi")
-        addFileType("MIDI", 11, "audio/midi")
-        addFileType("XMF", 11, "audio/midi")
-        addFileType("RTTTL", 11, "audio/midi")
-        addFileType("SMF", 12, "audio/sp-midi")
-        addFileType("IMY", 13, "audio/imelody")
-        addFileType("RTX", 11, "audio/midi")
-        addFileType("OTA", 11, "audio/midi")
-        addFileType("MXMF", 11, "audio/midi")
-        addFileType("MPEG", 21, "video/mpeg")
-        addFileType("MPG", 21, "video/mpeg")
-        addFileType("MP4", 21, "video/mp4")
-        addFileType("M4V", 22, "video/mp4")
-        addFileType("3GP", 23, "video/3gpp")
-        addFileType("3GPP", 23, "video/3gpp")
-        addFileType("3G2", 24, "video/3gpp2")
-        addFileType("3GPP2", 24, "video/3gpp2")
-        addFileType("MKV", 27, "video/x-matroska")
-        addFileType("WEBM", 30, "video/webm")
-        addFileType("TS", 28, "video/mp2ts")
-        addFileType("AVI", 29, "video/avi")
-        addFileType("WMV", 25, "video/x-ms-wmv")
-        addFileType("ASF", 26, "video/x-ms-asf")
-        addFileType("JPG", 31, "image/jpg")
-        addFileType("JPEG", 31, "image/jpeg")
-        addFileType("GIF", 32, "image/gif")
-        addFileType("PNG", 33, "image/png")
-        addFileType("BMP", 34, "image/x-ms-bmp")
-        addFileType("WBMP", 35, "image/vnd.wap.wbmp")
-        addFileType("WEBP", 36, "image/webp")
-        addFileType("heic", 37, "image/heif")
-        addFileType("M3U", 41, "audio/x-mpegurl")
-        addFileType("M3U", 41, "application/x-mpegurl")
-        addFileType("PLS", 42, "audio/x-scpls")
-        addFileType("WPL", 43, "application/vnd.ms-wpl")
-        addFileType("M3U8", 44, "application/vnd.apple.mpegurl")
-        addFileType("M3U8", 44, "audio/mpegurl")
-        addFileType("M3U8", 44, "audio/x-mpegurl")
-        addFileType("FL", 51, "application/x-android-drm-fl")
-        addFileType("TXT", 100, "text/plain")
-        addFileType("HTM", 101, "text/html")
-        addFileType("HTML", 101, "text/html")
-        addFileType("PDF", 102, "application/pdf")
-        addFileType("DOC", 104, "application/msword")
-        addFileType("XLS", 105, "application/vnd.ms-excel")
-        addFileType("PPT", 106, "application/mspowerpoint")
-        addFileType("FLAC", 10, "audio/flac")
-        addFileType("ZIP", 107, "application/zip")
-        addFileType("MPG", 200, "video/mp2p")
-        addFileType("MPEG", 200, "video/mp2p")
+        addFileType("MP3", FILE_TYPE_MP3, "audio/mpeg")
+        addFileType("MPGA", FILE_TYPE_MP3, "audio/mpeg")
+        addFileType("M4A", FILE_TYPE_M4A , "audio/mp4")
+        addFileType("WAV", FILE_TYPE_WAV , "audio/x-wav")
+        addFileType("AMR", FILE_TYPE_AMR , "audio/amr")
+        addFileType("AWB", FILE_TYPE_AWB , "audio/amr-wb")
+        addFileType("WMA", FILE_TYPE_WMA , "audio/x-ms-wma")
+        addFileType("OGG", FILE_TYPE_OGG , "audio/ogg")
+        addFileType("OGG", FILE_TYPE_OGG , "application/ogg")
+        addFileType("OGA", FILE_TYPE_OGG , "application/ogg")
+        addFileType("AAC", FILE_TYPE_AAC , "audio/aac")
+        addFileType("AAC", FILE_TYPE_AAC , "audio/aac-adts")
+        addFileType("MKA", FILE_TYPE_MKA , "audio/x-matroska")
+        addFileType("MID", FILE_TYPE_MID , "audio/midi")
+        addFileType("MIDI", FILE_TYPE_MID , "audio/midi")
+        addFileType("XMF", FILE_TYPE_MID, "audio/midi")
+        addFileType("RTTTL", FILE_TYPE_MID, "audio/midi")
+        addFileType("SMF", FILE_TYPE_SMF , "audio/sp-midi")
+        addFileType("IMY", FILE_TYPE_IMY , "audio/imelody")
+        addFileType("RTX", FILE_TYPE_MID, "audio/midi")
+        addFileType("OTA", FILE_TYPE_MID, "audio/midi")
+        addFileType("MXMF", FILE_TYPE_MID, "audio/midi")
+        addFileType("MPEG", FILE_TYPE_MP4 , "video/mpeg")
+        addFileType("MPG", FILE_TYPE_MP4, "video/mpeg")
+        addFileType("MP4", FILE_TYPE_MP4 , "video/mp4")
+        addFileType("M4V", FILE_TYPE_M4V , "video/mp4")
+        addFileType("3GP", FILE_TYPE_3GPP , "video/3gpp")
+        addFileType("3GPP", FILE_TYPE_3GPP , "video/3gpp")
+        addFileType("3G2", FILE_TYPE_3GPP2 , "video/3gpp2")
+        addFileType("3GPP2", FILE_TYPE_3GPP2 , "video/3gpp2")
+        addFileType("MKV", FILE_TYPE_MKV , "video/x-matroska")
+        addFileType("WEBM", FILE_TYPE_WEBM , "video/webm")
+        addFileType("TS", FILE_TYPE_MP2TS , "video/mp2ts")
+        addFileType("AVI", FILE_TYPE_AVI , "video/avi")
+        addFileType("WMV", FILE_TYPE_WMV , "video/x-ms-wmv")
+        addFileType("ASF", FILE_TYPE_ASF , "video/x-ms-asf")
+        addFileType("JPG", FILE_TYPE_JPEG , "image/jpg")
+        addFileType("JPEG", FILE_TYPE_JPEG , "image/jpeg")
+        addFileType("GIF", FILE_TYPE_GIF , "image/gif")
+        addFileType("PNG", FILE_TYPE_PNG , "image/png")
+        addFileType("BMP", FILE_TYPE_BMP , "image/x-ms-bmp")
+        addFileType("WBMP", FILE_TYPE_WBMP , "image/vnd.wap.wbmp")
+        addFileType("WEBP", FILE_TYPE_WEBP , "image/webp")
+        addFileType("heic", FILE_TYPE_HEIC , "image/heif")
+        addFileType("M3U", FILE_TYPE_M3U , "audio/x-mpegurl")
+        addFileType("M3U", FILE_TYPE_M3U , "application/x-mpegurl")
+        addFileType("PLS", FILE_TYPE_PLS , "audio/x-scpls")
+        addFileType("WPL", FILE_TYPE_WPL , "application/vnd.ms-wpl")
+        addFileType("M3U8", FILE_TYPE_HTTPLIVE , "application/vnd.apple.mpegurl")
+        addFileType("M3U8", FILE_TYPE_HTTPLIVE , "audio/mpegurl")
+        addFileType("M3U8", FILE_TYPE_HTTPLIVE , "audio/x-mpegurl")
+        addFileType("FL", FIRST_DRM_FILE_TYPE , "application/x-android-drm-fl")
+        addFileType("TXT", FILE_TYPE_TEXT , "text/plain")
+        addFileType("HTM", FILE_TYPE_HTML , "text/html")
+        addFileType("HTML", FILE_TYPE_HTML , "text/html")
+        addFileType("PDF", FILE_TYPE_PDF , "application/pdf")
+        addFileType("DOC", FILE_TYPE_MS_WORD , "application/msword")
+        addFileType("XLS", FILE_TYPE_MS_EXCEL , "application/vnd.ms-excel")
+        addFileType("PPT", FILE_TYPE_MS_POWERPOINT , "application/mspowerpoint")
+        addFileType("FLAC", FILE_TYPE_FLAC , "audio/flac")
+        addFileType("ZIP", FILE_TYPE_ZIP , "application/zip")
+        addFileType("MPG", FILE_TYPE_MP2PS , "video/mp2p")
+        addFileType("MPEG", FILE_TYPE_MP2PS , "video/mp2p")
 
     }
 
