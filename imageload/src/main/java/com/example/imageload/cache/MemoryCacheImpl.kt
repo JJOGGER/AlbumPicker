@@ -15,7 +15,13 @@ class MemoryCacheImpl():MemoryCache{
         }
         return bitmap
     }
-
+    override fun set(key: Long, bitmap: Bitmap, toWeakCache: Boolean) {
+        if (toWeakCache) {
+            WeakCache.put(key, bitmap)
+        } else {
+            LruCache.put(key, bitmap)
+        }
+    }
     override fun set(key: Long, bitmap: Bitmap) {
 //        if (toWeakCache) {
 //            WeakCache.put(key, bitmap)

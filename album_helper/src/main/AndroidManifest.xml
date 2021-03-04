@@ -17,6 +17,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.SelectImageActivity" />
+        <activity android:name=".permission.PermissionActivity" />
     </application>
 
 </manifest>

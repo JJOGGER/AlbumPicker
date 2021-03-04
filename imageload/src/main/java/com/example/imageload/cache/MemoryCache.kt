@@ -10,4 +10,6 @@ interface MemoryCache {
 
     operator fun set(key: Long,bitmap: Bitmap)
 
+    operator fun set(key: Long,bitmap: Bitmap, toWeakCache: Boolean)
+
 }

@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.BitmapRegionDecoder
 import android.graphics.Rect
 import android.net.Uri
-import okhttp3.CacheControl
+import com.example.imageload.request.ImageRequest
 import java.io.*
 
 internal abstract class Source : Closeable {
@@ -181,7 +181,7 @@ internal abstract class Source : Closeable {
         /**
          * Try cache interceptor first
          */
-        private fun checkCache(request: Request): Source? {
+        private fun checkCache(request: ImageRequest): Source? {
             val url = request.path
             if (request.cacheInterceptor != null) {
                 val cacheFile = request.cacheInterceptor!!.cachePath(url)
@@ -194,7 +194,7 @@ internal abstract class Source : Closeable {
         }
 
         @Throws(IOException::class)
-        fun parse(request: Request): Source {
+        fun parse(request: ImageRequest): Source {
             val path = request.path
             return when {
                 path.startsWith("http") -> checkCache(request) ?: let {
