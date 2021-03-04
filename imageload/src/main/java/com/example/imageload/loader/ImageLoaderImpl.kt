@@ -4,18 +4,12 @@ import android.graphics.Bitmap
 import android.text.TextUtils
 import android.view.View
 import android.widget.ImageView
-import com.example.album_helper.coroutine.Coroutine
+import com.example.imageload.coroutine.Coroutine
 import com.example.imageload.cache.*
-import com.example.imageload.cache.DiskCache
-import com.example.imageload.decode.Decoder
-import com.example.imageload.decode.HeaderParser
-import com.example.imageload.decode.Source
 import com.example.imageload.request.ImageRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import java.io.File
 import java.lang.ref.WeakReference
 
 /**
@@ -34,6 +28,7 @@ class ImageLoaderImpl(override val memoryCache: MemoryCacheImpl) : ImageLoader {
 
             }
         }
+        loadImage(request,request.target!!.width,request.target!!.height)
 
     }
 
@@ -61,7 +56,6 @@ class ImageLoaderImpl(override val memoryCache: MemoryCacheImpl) : ImageLoader {
             return
         }
         if (bitmap==null){
-            Coroutine.async {
 //                val filePath = DiskCache[request.key]
 //                val fromDiskCache = !TextUtils.isEmpty(filePath)
 //                val source = if (fromDiskCache) Source.valueOf(File(filePath!!)) else Source.parse(request)
@@ -82,9 +76,6 @@ class ImageLoaderImpl(override val memoryCache: MemoryCacheImpl) : ImageLoader {
 //                    }
 //                }
                 LoadHelper.start(request,memoryCache)
-            }.onSuccess {
-                LoadHelper.feedback(request,target,bitmap,false)
-            }
 
         }
     }

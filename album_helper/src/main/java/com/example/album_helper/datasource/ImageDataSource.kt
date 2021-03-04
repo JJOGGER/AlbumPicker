@@ -11,7 +11,7 @@ import androidx.loader.content.CursorLoader
 import androidx.loader.content.Loader
 import com.example.album_helper.callback.OnDataLoadedListener
 import com.example.album_helper.callback.OnDataSupportListener
-import com.example.album_helper.coroutine.Coroutine
+import com.example.imageload.coroutine.Coroutine
 import com.example.album_helper.helper.AlbumHelper
 import com.example.album_helper.model.ImageFolder
 import com.example.album_helper.model.ImageItem

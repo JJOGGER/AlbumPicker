@@ -20,8 +20,10 @@ internal object HeaderParser {
 
     // "MM".
     private const val MOTOROLA_TIFF_MAGIC_NUMBER = 0x4D4D
+
     // "II".
     private const val INTEL_TIFF_MAGIC_NUMBER = 0x4949
+
     //"Exif\0\0";
     private val JPEG_EXIF_SEGMENT_PREAMBLE = byteArrayOf(69, 120, 105, 102, 0, 0)
 
@@ -89,7 +91,11 @@ internal object HeaderParser {
             // the input stream is one of FileInputStream, AssetInputStream, RecycledInputStream,
             // and FileInputStream can just read one time, so we close it directly
             if (!stream.markSupported()) {
-                Utils.closeQuietly(stream)
+                try {
+                    stream.close()
+                } catch (e: IOException) {
+                    // ignore
+                }
             } else if (stream is RecycledInputStream) {
                 stream.rewind()
             } else {
@@ -226,8 +232,8 @@ internal object HeaderParser {
 
     private class RandomAccessReader internal constructor(data: ByteArray, length: Int) {
         private val data: ByteBuffer = ByteBuffer.wrap(data)
-                .order(ByteOrder.BIG_ENDIAN)
-                .limit(length) as ByteBuffer
+            .order(ByteOrder.BIG_ENDIAN)
+            .limit(length) as ByteBuffer
 
         internal fun order(byteOrder: ByteOrder) {
             this.data.order(byteOrder)

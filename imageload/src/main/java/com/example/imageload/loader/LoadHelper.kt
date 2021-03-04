@@ -8,7 +8,7 @@ import android.util.SparseArray
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
-import com.example.album_helper.coroutine.Coroutine
+import com.example.imageload.coroutine.Coroutine
 import com.example.imageload.cache.*
 import com.example.imageload.cache.DiskCache
 import com.example.imageload.decode.Decoder
@@ -18,10 +18,9 @@ import com.example.imageload.util.context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import java.io.File
-import java.util.concurrent.TimeUnit
 
 
-internal object LoadHelper:CoroutineScope by MainScope() {
+internal object LoadHelper : CoroutineScope by MainScope() {
     private const val TAG = "Dispatcher"
     private var fromDiskCache = false
 
@@ -39,32 +38,31 @@ internal object LoadHelper:CoroutineScope by MainScope() {
         pausedRequests.put(System.identityHashCode(target), request)
     }
 
-    fun start(request: ImageRequest?,memoryCache: MemoryCache) {
+    fun start(request: ImageRequest?, memoryCache: MemoryCache) {
         if (request == null) {
             return
         }
 
         var imageView: ImageView? = null
-        if (request.targetReference != null) {
-            imageView = request.targetReference!!.get()
-            if (imageView != null) {
-                if (checkTag(
-                        request,
-                        imageView
-                    )
-                ) {
-                    return
-                }
-                if (!request.keepOriginal) {
-                    imageView.setImageDrawable(null)
-                }
-                imageView.tag = null
+        //todo 這裏為空
+        if (request.target != null) {
+            imageView = request.target
+            if (checkTag(
+                    request,
+                    imageView
+                )
+            ) {
+                return
             }
+            if (!request.keepOriginal) {
+                imageView.setImageDrawable(null)
+            }
+            imageView.tag = null
         }
 
         // id source is invalid, just callback and return
-        when(request.data){
-            is String->{
+        when (request.data) {
+            is String -> {
                 if (TextUtils.isEmpty(request.data)) {
                     abort(request, imageView)
                     return
@@ -96,7 +94,8 @@ internal object LoadHelper:CoroutineScope by MainScope() {
             Coroutine.async {
                 val filePath = DiskCache[request.key]
                 val fromDiskCache = !TextUtils.isEmpty(filePath)
-                val source = if (fromDiskCache) Source.valueOf(File(filePath!!)) else Source.parse(request)
+                val source =
+                    if (fromDiskCache) Source.valueOf(File(filePath!!)) else Source.parse(request)
                 val gifDecoder = Config.gifDecoder
 //                if (!fromDiskCache && request.gifPriority && gifDecoder != null
 //                    && HeaderParser.isGif(source.magic)) {
@@ -113,7 +112,9 @@ internal object LoadHelper:CoroutineScope by MainScope() {
                         DiskCache.put(request.key, bitmap!!)
                     }
                 }
-            }.onSuccess {  }
+            }.onSuccess {
+                feedback(request, imageView, bitmap, false)
+            }
 //            val loader = Worker(request, imageView)
 //            loader.priority(request.priority)
 //                    .hostHash(request.hostHash)
@@ -133,6 +134,7 @@ internal object LoadHelper:CoroutineScope by MainScope() {
 //            }
         }
     }
+
     private fun transform(request: ImageRequest, source: Bitmap?): Bitmap? {
         var output = source
         if (output != null && !fromDiskCache && !request.transformations.isNullOrEmpty()) {
@@ -145,6 +147,7 @@ internal object LoadHelper:CoroutineScope by MainScope() {
         }
         return output
     }
+
     private fun checkTag(request: ImageRequest, imageView: ImageView): Boolean {
 //        val tag = imageView.tag
 //        if (tag is ImageRequest) {
@@ -186,7 +189,12 @@ internal object LoadHelper:CoroutineScope by MainScope() {
 //        }
     }
 
-    fun feedback(request: ImageRequest, imageView: ImageView?, result: Any?, beforeLoading: Boolean) {
+    fun feedback(
+        request: ImageRequest,
+        imageView: ImageView?,
+        result: Any?,
+        beforeLoading: Boolean
+    ) {
         //  no matter cancel or not, try to stop animated drawable ( if set )
         if (!beforeLoading && request.targetReference != null) {
             stopAnimDrawable(request.targetReference!!.get())

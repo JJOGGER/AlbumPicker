@@ -4,7 +4,7 @@ import android.content.Context
 import com.example.album_helper.R
 import com.example.album_helper.model.ImageItem
 import com.example.album_helper.util.deviceWidth
-import com.horizon.doodle.Doodle
+//import com.horizon.doodle.Doodle
 import kotlinx.android.synthetic.main.rv_image_select_item.view.*
 import load
 

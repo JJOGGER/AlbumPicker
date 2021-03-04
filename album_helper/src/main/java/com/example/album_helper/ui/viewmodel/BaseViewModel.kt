@@ -2,7 +2,7 @@ package com.example.album_helper.ui.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import com.example.album_helper.coroutine.Coroutine
+import com.example.imageload.coroutine.Coroutine
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 

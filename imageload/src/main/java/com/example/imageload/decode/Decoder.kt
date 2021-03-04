@@ -5,7 +5,7 @@ import android.media.ExifInterface
 import android.util.Log
 import android.widget.ImageView
 import android.widget.ImageView.ScaleType
-import com.horizon.task.base.LogProxy
+import com.example.imageload.request.ImageRequest
 import java.io.IOException
 
 /**
@@ -30,7 +30,7 @@ internal object Decoder {
     }
 
     @Throws(IOException::class)
-    fun decode(source: Source?, request: Request?, fromDiskCache: Boolean): Bitmap? {
+    fun decode(source: Source?, request: ImageRequest?, fromDiskCache: Boolean): Bitmap? {
         if (source == null || request == null) {
             return null
         }
@@ -151,18 +151,18 @@ internal object Decoder {
                 bitmap = rotateImageExif(bitmap, orientation)
             }
 
-            if (LogProxy.isDebug) {
-                if (bitmap != null) {
-                    Log.i(TAG, " allocated:" + Utils.formatSize(Utils.getBytesCount(bitmap).toLong())
-                            + " v:" + request.viewWidth + "x" + request.viewHeight
-                            + " d:" + dwidth + "x" + dheight
-                            + " bitmap:" + bitmap.width + "x" + bitmap.height
-                            + " source:" + source.javaClass.simpleName
-                    )
-                } else {
-                    Log.e(TAG, "Decoder image failed. " + request.path)
-                }
-            }
+//            if (LogProxy.isDebug) {
+//                if (bitmap != null) {
+//                    Log.i(TAG, " allocated:" + Utils.formatSize(Utils.getBytesCount(bitmap).toLong())
+//                            + " v:" + request.viewWidth + "x" + request.viewHeight
+//                            + " d:" + dwidth + "x" + dheight
+//                            + " bitmap:" + bitmap.width + "x" + bitmap.height
+//                            + " source:" + source.javaClass.simpleName
+//                    )
+//                } else {
+//                    Log.e(TAG, "Decoder image failed. " + request.path)
+//                }
+//            }
         } finally {
             ByteArrayPool.recycleBasicArray(options.inTempStorage)
         }
