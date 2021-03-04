@@ -1,0 +1,37 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml:1:1-32
+INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml:1:1-32
+INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml:1:1-32
+INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml:1:1-32
+INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml:1:1-32
+INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml:1:1-32
+INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml:1:1-32
+	package
+		ADDED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml:1:11-30
+		INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+		INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+		ADDED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml:1:1-32
+		INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml:1:1-32
+	android:versionCode
+		INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+		ADDED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml:1:1-32
+		INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+uses-sdk
+INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+		ADDED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+		INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+		ADDED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml
+		INJECTED from /Users/jogger/AndroidStudioProjects/MyApplication/coil-base/src/main/AndroidManifest.xml

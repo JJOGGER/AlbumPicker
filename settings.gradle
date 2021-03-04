@@ -1,2 +1,5 @@
+include ':doodle'
+//include ':coil-base'
+include ':imageload'
 include ':app', ':album_helper'
 rootProject.name='My Application'

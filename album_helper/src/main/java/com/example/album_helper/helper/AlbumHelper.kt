@@ -2,8 +2,12 @@ package com.example.album_helper.helper
 
 import android.content.Context
 import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import com.example.album_helper.constant.ImageSelectMode
+import com.example.album_helper.coroutine.Coroutine
 import com.example.album_helper.model.ImageFolder
+import com.example.album_helper.permission.Permissions
+import com.example.album_helper.permission.PermissionsCompat
 import com.example.album_helper.ui.SelectImageActivity
 
 class AlbumHelper(builder: Builder) {
@@ -33,10 +37,17 @@ class AlbumHelper(builder: Builder) {
         }
     }
 
-    fun start(ctx: Context) {
-        ctx.startActivity(Intent(ctx, SelectImageActivity::class.java).apply {
+    fun start(ctx: AppCompatActivity) {
+        PermissionsCompat.Builder(ctx)
+            .addPermissions(*Permissions.Group.STORAGE)
+            .rationale("R.string.tip_perm_request_storage")
+            .onGranted {
+                ctx.startActivity(Intent(ctx, SelectImageActivity::class.java).apply {
 
-        })
+                })
+            }
+            .request()
+
     }
 
     fun getImageSelectMode(): Int{

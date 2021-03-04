@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.album_helper.R
 import com.example.album_helper.helper.AlbumHelper
 import com.example.album_helper.model.ImageFolder
@@ -27,7 +28,7 @@ class SelectImageActivity : BaseImageActivity<SelectImageViewModel>() {
     override fun getLayoutId(): Int = R.layout.activity_select_image
 
     override fun initView(savedInstanceState: Bundle?) {
-        rv_content.layoutManager = GridLayoutManager(this, 3, RecyclerView.VERTICAL, true)
+        rv_content.layoutManager = GridLayoutManager(this, 3, RecyclerView.VERTICAL, false)
         rv_content.adapter = adapter
         viewModel.getImageFoldersLiveData().observe(this, Observer { updateView(it) })
         viewModel.loadImageDatas(this, albumHelper)
