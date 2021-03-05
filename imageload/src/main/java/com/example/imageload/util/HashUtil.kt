@@ -51,9 +51,9 @@ object HashUtil {
                 h *= m
             }
             6 -> {
-                h = h xor ((data[size + 5] and 0xFF.toByte()) as Long shl 40)
-                h = h xor ((data[size + 4] and 0xFF.toByte()) as Long shl 32)
-                h = h xor ((data[size + 3] and 0xFF.toByte()) as Long shl 24)
+                h = h xor ((data[size + 5] and 0xFF.toByte()).toLong() shl 40)
+                h = h xor ((data[size + 4] and 0xFF.toByte()).toLong() shl 32)
+                h = h xor ((data[size + 3] and 0xFF.toByte()).toLong() shl 24)
                 h = h xor ((data[size + 2] and 0xFF.toByte()).toLong()  shl 16)
                 h = h xor ((data[size + 1] and 0xFF.toByte()).toLong()  shl 8)
                 h = h xor ((data[size] and 0xFF.toByte()).toLong())

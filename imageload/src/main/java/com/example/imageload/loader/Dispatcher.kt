@@ -8,23 +8,15 @@ import android.util.SparseArray
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.ImageView
-import com.example.imageload.cache.DiskCache
-import com.example.imageload.cache.DiskCacheStrategy
 import com.example.imageload.cache.MemoryCache
-import com.example.imageload.cache.MemoryCacheStrategy
-import com.example.imageload.coroutine.Coroutine
-import com.example.imageload.decode.Decoder
-import com.example.imageload.decode.Source
 import com.example.imageload.request.ImageRequest
 import com.example.imageload.util.context
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import java.io.File
+import com.horizon.task.base.LogProxy
+import java.util.concurrent.TimeUnit
 
 
-internal object LoadHelper : CoroutineScope by MainScope() {
+internal object Dispatcher {
     private const val TAG = "Dispatcher"
-    private var fromDiskCache = false
 
     @Volatile
     private var pauseFlag = false
@@ -32,6 +24,18 @@ internal object LoadHelper : CoroutineScope by MainScope() {
 
     fun pause() {
         pauseFlag = true
+    }
+
+    @Synchronized
+    fun resume() {
+        pauseFlag = false
+        val n = pausedRequests.size()
+//        if (n > 0) {
+//            for (i in 0 until n) {
+//                start(pausedRequests.valueAt(i))
+//            }
+//            pausedRequests.clear()
+//        }
     }
 
     @Synchronized
@@ -44,35 +48,29 @@ internal object LoadHelper : CoroutineScope by MainScope() {
         if (request == null) {
             return
         }
-        prepareStartBefore(request,memoryCache)
+
         var imageView: ImageView? = null
-        //todo 這裏為空
-        if (request.target != null) {
-            imageView = request.target
-            if (checkTag(
-                    request,
-                    imageView
-                )
-            ) {
-                return
+        if (request.targetReference != null) {
+            imageView = request.targetReference!!.get()
+            if (imageView != null) {
+                if (checkTag(request, imageView)) {
+                    return
+                }
+                if (!request.keepOriginal) {
+                    imageView.setImageDrawable(null)
+                }
+                imageView.tag = null
             }
-            if (!request.keepOriginal) {
-                imageView.setImageDrawable(null)
-            }
-            imageView.tag = request
         }
 
         // id source is invalid, just callback and return
-        when (request.data) {
-            is String -> {
-                if (TextUtils.isEmpty(request.data)) {
-                    abort(request, imageView)
-                    return
-                }
-            }
+
+        if (TextUtils.isEmpty(DataAction.buildDataString(request.data))) {
+            abort(request, imageView)
+            return
         }
 
-        var bitmap = memoryCache.get(request.key)
+        val bitmap = memoryCache.get(request.key)
 
         val waiter = request.waiter
         if (waiter != null && (bitmap != null || waiter.timeout == 0L)) {
@@ -80,12 +78,7 @@ internal object LoadHelper : CoroutineScope by MainScope() {
             return
         }
 
-        feedback(
-            request,
-            imageView,
-            bitmap,
-            true
-        )
+        feedback(request, imageView, bitmap, true)
 
         if (imageView != null && bitmap == null && pauseFlag) {
             pause(request, imageView)
@@ -93,72 +86,24 @@ internal object LoadHelper : CoroutineScope by MainScope() {
         }
 
         if (bitmap == null) {
-            Coroutine.async {
-                val filePath = DiskCache[request.key]
-                val fromDiskCache = !TextUtils.isEmpty(filePath)
-                val source =
-                    if (fromDiskCache) Source.valueOf(File(filePath!!)) else Source.parse(request)
-//                val gifDecoder = Config.gifDecoder
-//                if (!fromDiskCache && request.gifPriority && gifDecoder != null
-//                    && HeaderParser.isGif(source.magic)) {
-//                     gifDecoder.decode(source.data)
-//                }else{
-                    bitmap = Decoder.decode(source, request, fromDiskCache)
-                    bitmap = transform(request, bitmap)
-                    if (bitmap != null) {
-                        if (request.memoryCacheStrategy != MemoryCacheStrategy.NONE) {
-                            val toWeakCache = request.memoryCacheStrategy == MemoryCacheStrategy.WEAK
-                            memoryCache.set(request.key, bitmap!!, toWeakCache)
-                        }
-                        if (!fromDiskCache && request.diskCacheStrategy and DiskCacheStrategy.RESULT != 0) {
-                            DiskCache.put(request.key, bitmap!!)
-                        }
-                    }
-//                }
+            val loader = Worker(request, imageView,memoryCache)
+            loader.priority(request.priority.ordinal)
+                    .hostHash(request.hostHash)
+                    .execute()
 
-            }.onSuccess {
-                request.waiter=ImageRequest.Waiter(0)
-                request.waiter!!.result=bitmap
-                feedback(request, imageView, bitmap, false)
-            }
-//            val loader = Worker(request, imageView)
-//            loader.priority(request.priority)
-//                    .hostHash(request.hostHash)
-//                    .execute()
-//
-//            if (waiter != null && !loader.isDone && !loader.isCancelled) {
-//                try {
-//                    @Suppress("ReplaceGetOrSet")
-//                    waiter.result = loader.get(waiter.timeout, TimeUnit.MILLISECONDS) as Bitmap
-//                } catch (t: Throwable) {
-//                    LogProxy.e(TAG, t)
-//                }
-//
-//                if (!loader.isDone) {
-//                    loader.cancel(true)
-//                }
-//            }
-        }
-    }
+            if (waiter != null && !loader.isDone && !loader.isCancelled) {
+                try {
+                    @Suppress("ReplaceGetOrSet")
+                    waiter.result = loader.get(waiter.timeout, TimeUnit.MILLISECONDS) as Bitmap
+                } catch (t: Throwable) {
+                    LogProxy.e(TAG, t)
+                }
 
-    /**
-     *开始执行前的一些操作
-     */
-    private fun prepareStartBefore(request: ImageRequest, memoryCache: MemoryCache) {
-
-    }
-
-    private fun transform(request: ImageRequest, source: Bitmap?): Bitmap? {
-        var output = source
-        if (output != null && !fromDiskCache && !request.transformations.isNullOrEmpty()) {
-            for (transformation in request.transformations!!) {
-                output = transformation.transform(output!!)
-                if (output == null) {
-                    break
+                if (!loader.isDone) {
+                    loader.cancel(true)
                 }
             }
         }
-        return output
     }
 
     private fun checkTag(request: ImageRequest, imageView: ImageView): Boolean {
@@ -166,15 +111,15 @@ internal object LoadHelper : CoroutineScope by MainScope() {
         if (tag is ImageRequest) {
             if (request.key == tag.key) {
                 return true
+            } else {
+                val preTask = tag.workerReference!!.get()
+                if (preTask != null && !preTask.isCancelled) {
+                    preTask.cancel(false)
+                }
             }
-//            else {
-//                val preTask = tag.workerReference!!.get()
-//                if (preTask != null && !preTask.isCancelled) {
-//                    preTask.cancel(false)
-//                }
-//            }
         } else if (tag != null) {
             val e = IllegalArgumentException("Don't call setTag() on a view Doodle is targeting, try setTag(int, Object)")
+            LogProxy.e(TAG, e)
             return true
             // shell we throw the exception ?
             // throw e;
@@ -185,30 +130,20 @@ internal object LoadHelper : CoroutineScope by MainScope() {
     private fun abort(request: ImageRequest, imageView: ImageView?) {
 //        if (request.simpleTarget != null) {
 //            request.simpleTarget!!.onComplete(null)
-//        } else if (imageView != null) {
+//        } else
+            if (imageView != null) {
 //            if (request.callback != null && request.callback!!.onReady(null)) {
 //                return
 //            }
-//            if (request.goneIfMiss || request.errorResId >= 0 || request.errorDrawable != null) {
-//                setError(
-//                    request,
-//                    imageView
-//                )
-//            } else {
-//                setPlaceholder(
-//                    request,
-//                    imageView
-//                )
-//            }
-//        }
+            if (request.goneIfMiss || request.errorResId >= 0 || request.errorDrawable != null) {
+                setError(request, imageView)
+            } else {
+                setPlaceholder(request, imageView)
+            }
+        }
     }
 
-    fun     feedback(
-        request: ImageRequest,
-        imageView: ImageView?,
-        result: Any?,
-        beforeLoading: Boolean
-    ) {
+    fun feedback(request: ImageRequest, imageView: ImageView?, result: Any?, beforeLoading: Boolean) {
         //  no matter cancel or not, try to stop animated drawable ( if set )
         if (!beforeLoading && request.targetReference != null) {
             stopAnimDrawable(request.targetReference!!.get())
@@ -240,17 +175,10 @@ internal object LoadHelper : CoroutineScope by MainScope() {
             if (bitmap != null) {
                 if (request.alwaysAnimation || !beforeLoading) {
                     if (request.crossFade) {
-                        crossFade(
-                            imageView,
-                            bitmap,
-                            request
-                        )
+                        crossFade(imageView, bitmap, request)
                     } else {
                         imageView.setImageBitmap(bitmap)
-                        startAnimation(
-                            request,
-                            imageView
-                        )
+                        startAnimation(request, imageView)
                     }
                 } else {
                     imageView.setImageBitmap(bitmap)
@@ -260,19 +188,13 @@ internal object LoadHelper : CoroutineScope by MainScope() {
             }
         } else {
             if (beforeLoading) {
-                setPlaceholder(
-                    request,
-                    imageView
-                )
+                setPlaceholder(request, imageView)
                 val placeholder = imageView.drawable
                 if (placeholder is Animatable && !pauseFlag) {
                     placeholder.start()
                 }
             } else {
-                setError(
-                    request,
-                    imageView
-                )
+                setError(request, imageView)
             }
         }
     }
@@ -309,6 +231,7 @@ internal object LoadHelper : CoroutineScope by MainScope() {
                 imageView.clearAnimation()
                 imageView.startAnimation(animation)
             } catch (e: Exception) {
+                LogProxy.e(TAG, e)
             }
         }
     }

@@ -1,12 +1,10 @@
 package com.example.imageload.util
 
-import android.app.Activity
-import android.app.Application
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
-import android.os.Bundle
 import com.example.imageload.cache.ImageContentProvider
+import java.io.Closeable
 import java.io.File
 import java.io.IOException
 
@@ -29,7 +27,15 @@ val cacheDir: String by lazy {
     context.cacheDir?.path
         ?: ("/data/" + "data/" + context.packageName + "/cache")
 }
-
+fun closeQuietly(closeable: Closeable?) {
+    if (closeable != null) {
+        try {
+            closeable.close()
+        } catch (e: IOException) {
+            // ignore
+        }
+    }
+}
 @Throws(IOException::class)
 fun makeFileIfNotExist(file: File?): Boolean {
     return when {

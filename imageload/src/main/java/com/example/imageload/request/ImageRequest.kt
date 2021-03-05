@@ -2,35 +2,6 @@
 
 package com.example.imageload.request
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.ColorSpace
-import android.graphics.drawable.Drawable
-import android.icu.number.Precision
-import android.icu.number.Scale
-import android.net.Uri
-import android.os.Build.VERSION.SDK_INT
-import android.renderscript.RenderScript
-import android.text.TextUtils
-import android.view.View
-import android.view.ViewTreeObserver
-import android.view.animation.AlphaAnimation
-import android.view.animation.Animation
-import android.widget.ImageView
-import android.widget.ImageView.ScaleType.CENTER
-import android.widget.ImageView.ScaleType.MATRIX
-import androidx.annotation.DrawableRes
-import androidx.annotation.MainThread
-import androidx.annotation.Px
-import androidx.annotation.RequiresApi
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import com.example.imageload.cache.DiskCacheStrategy
-import com.example.imageload.cache.MemoryCacheStrategy
-import com.example.imageload.decode.Decoder
-import com.example.imageload.loader.Config
-import com.example.imageload.util.HashUtil
-import com.horizon.doodle.transform.Transformation
 //import coil.ComponentRegistry
 //import coil.ImageLoader
 //import coil.annotation.ExperimentalCoilApi
@@ -64,7 +35,23 @@ import com.horizon.doodle.transform.Transformation
 //import kotlinx.coroutines.CoroutineDispatcher
 //import okhttp3.Headers
 //import okhttp3.HttpUrl
-import java.io.File
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.renderscript.RenderScript
+import android.text.TextUtils
+import android.view.View
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
+import android.widget.ImageView
+import com.example.imageload.cache.DiskCacheStrategy
+import com.example.imageload.cache.MemoryCacheStrategy
+import com.example.imageload.loader.Config
+import com.example.imageload.loader.DataAction
+import com.example.imageload.loader.Worker
+import com.example.imageload.util.HashUtil
+import com.horizon.doodle.transform.Transformation
 import java.lang.ref.WeakReference
 import java.util.*
 
@@ -77,7 +64,9 @@ import java.util.*
 class ImageRequest private constructor(
     val context: Context,
     val target: ImageView?,
-    val data: Any
+    val data: Any,
+    var viewWidth:Int=0,
+    var viewHeight: Int = 0
 ) {
     internal val key: Long by lazy { HashUtil.hash64(toString()) }
 
@@ -86,9 +75,7 @@ class ImageRequest private constructor(
     private var sourceKey: String? = null
 
     // decode parameter
-    internal var viewWidth: Int = 0
-    internal var viewHeight: Int = 0
-    internal var clipType = Decoder.NO_CLIP
+    internal var clipType = target?.scaleType
     internal var config = Config.bitmapConfig
     internal var transformations: MutableList<Transformation>? = null
 
@@ -123,7 +110,7 @@ class ImageRequest private constructor(
 //internal var callback: Callback? = null
     internal var targetReference: WeakReference<ImageView>? = null
 
-    //internal var workerReference: WeakReference<Worker>? = null
+    internal var workerReference: WeakReference<Worker>? = null
 
     /**
      * @param path url or path
@@ -173,7 +160,7 @@ class ImageRequest private constructor(
     }
 
     fun scaleType(scaleType: ImageView.ScaleType): ImageRequest {
-        this.clipType = Decoder.mapScaleType(scaleType)
+        this.clipType = scaleType
         return this
     }
 
@@ -496,33 +483,38 @@ class ImageRequest private constructor(
      */
     private fun alignParams() {
         if (noClip) {
-            clipType = Decoder.NO_CLIP
+//            clipType = Decoder.NO_CLIP
             viewWidth = 0
             viewHeight = 0
         } else if (viewWidth <= 0 || viewHeight <= 0) {
             noClip = true
-            clipType = Decoder.NO_CLIP
+//            clipType = Decoder.NO_CLIP
         }
 
         // if sizes has been assigned, can not use NO_CLIP mode,
         // use CENTER_INSIDE mode to scale image by assigned width and height
-        if (clipType == Decoder.NO_CLIP && viewWidth > 0 && viewHeight > 0) {
-            clipType = Decoder.CENTER_INSIDE
-        }
+//        if (clipType == Decoder.NO_CLIP && viewWidth > 0 && viewHeight > 0) {
+//            clipType = Decoder.CENTER_INSIDE
+//        }
     }
 
     override fun toString(): String {
         val builder = StringBuilder()
+        if (!TextUtils.isEmpty(sourceKey)) {
+            builder.append("source:").append(sourceKey)
+        } else {
+            builder.append("path:").append(data)
+        }
         builder.append(" size:").append(viewWidth)
             .append('x').append(viewHeight)
             .append(" type:").append(clipType)
             .append(" config:").append(config)
-//    if (!Utils.isEmpty(transformations)) {
-//        builder.append(" transforms:")
-//        for (transformation in transformations!!) {
-//            builder.append(' ').append(transformation.key())
-//        }
-//    }
+        if (!transformations.isNullOrEmpty()) {
+            builder.append(" transforms:")
+            for (transformation in transformations!!) {
+                builder.append(' ').append(transformation.key())
+            }
+        }
         return builder.toString()
     }
 
@@ -550,8 +542,9 @@ class ImageRequest private constructor(
             target = request.target
         }
         fun build(): ImageRequest {
+
             return ImageRequest(context = context,
-                target = target,data = data?:"coil.request.NullRequestData")
+                target = target,data = DataAction.buildDataString(data))
         }
 
         fun data(data: Any?) = apply {

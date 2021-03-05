@@ -4,8 +4,7 @@ import android.graphics.Bitmap
 import android.text.TextUtils
 import android.view.View
 import android.widget.ImageView
-import com.example.imageload.coroutine.Coroutine
-import com.example.imageload.cache.*
+import com.example.imageload.cache.MemoryCacheImpl
 import com.example.imageload.request.ImageRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,13 +21,13 @@ class ImageLoaderImpl(override val memoryCache: MemoryCacheImpl) : ImageLoader {
     override fun load(request: ImageRequest) {
         if (request.target == null)
             return
-        targetReference = WeakReference(request.target!!)
+        targetReference = WeakReference(request.target)
         when {
-            request.target!!.width > 0 && request.target!!.height > 0 -> {
+            request.target.width > 0 && request.target.height > 0 -> {
 
             }
         }
-        loadImage(request,request.target!!.width,request.target!!.height)
+        loadImage(request,request.target.width,request.target.height)
 
     }
 
@@ -75,8 +74,10 @@ class ImageLoaderImpl(override val memoryCache: MemoryCacheImpl) : ImageLoader {
 //                        DiskCache.put(request.key, bitmap!!)
 //                    }
 //                }
-                LoadHelper.start(request,memoryCache)
+                Dispatcher.start(request,memoryCache)
 
+        }else{
+            Dispatcher.feedback(request,target,bitmap,false)
         }
     }
     private fun transform(request: ImageRequest, source: Bitmap?): Bitmap? {
@@ -124,22 +125,22 @@ class ImageLoaderImpl(override val memoryCache: MemoryCacheImpl) : ImageLoader {
 
     private fun checkTag(request: ImageRequest, imageView: ImageView): Boolean {
         val tag = imageView.tag
-//        if (tag is ImageRequest) {
-//            if (request.key == tag.key) {
-//                return true
-//            } else {
+        if (tag is ImageRequest) {
+            if (request.key == tag.key) {
+                return true
+            } else {
 //                val preTask = tag.workerReference!!.get()
 //                if (preTask != null && !preTask.isCancelled) {
 //                    preTask.cancel(false)
 //                }
-//            }
-//        } else if (tag != null) {
-//            val e =
-//                IllegalArgumentException("Don't call setTag() on a view Doodle is targeting, try setTag(int, Object)")
-//            return true
-//            // shell we throw the exception ?
-//            // throw e;
-//        }
+            }
+        } else if (tag != null) {
+            val e =
+                IllegalArgumentException("Don't call setTag() on a view Doodle is targeting, try setTag(int, Object)")
+            return true
+            // shell we throw the exception ?
+            // throw e;
+        }
         return false
     }
 
