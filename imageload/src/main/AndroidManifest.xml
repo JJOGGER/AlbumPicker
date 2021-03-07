@@ -3,7 +3,7 @@
     package="com.example.imageload">
     <application>
     <provider
-        android:name=".cache.ImageContentProvider"
+        android:name=".ImageContentProvider"
         android:authorities="${applicationId}.doodle"
         android:exported="false"/>
     </application>

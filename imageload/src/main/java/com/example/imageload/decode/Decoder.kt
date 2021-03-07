@@ -2,8 +2,8 @@ package com.example.imageload.decode
 
 import android.graphics.*
 import android.media.ExifInterface
+import android.os.Looper
 import android.util.Log
-import android.widget.ImageView
 import android.widget.ImageView.ScaleType
 import com.example.imageload.request.ImageRequest
 import java.io.IOException
@@ -22,15 +22,19 @@ internal object Decoder {
 
     fun mapScaleType(scaleType: ScaleType): Int {
         return when (scaleType) {
-            ImageView.ScaleType.MATRIX -> MATRIX
-            ImageView.ScaleType.CENTER -> CENTER
-            ImageView.ScaleType.CENTER_CROP -> CENTER_CROP
+            ScaleType.MATRIX -> MATRIX
+            ScaleType.CENTER -> CENTER
+            ScaleType.CENTER_CROP -> CENTER_CROP
             else -> CENTER_INSIDE
         }
     }
 
     @Throws(IOException::class)
-    fun decode(source: Source?, request: ImageRequest?, fromDiskCache: Boolean): Bitmap? {
+    fun decode(source: Source?, request: ImageRequest?): Bitmap? {
+        Log.e(
+            TAG,
+            "--------${Thread.currentThread()}   ${Thread.currentThread() === Looper.getMainLooper().thread}"
+        )
         if (source == null || request == null) {
             return null
         }
@@ -40,18 +44,17 @@ internal object Decoder {
         options.inMutable = true
         options.inPreferredConfig = request.config
 
-        var clipType = if (fromDiskCache) NO_CLIP else request.clipType
+        var clipType = request.clipType
         var bitmap: Bitmap?
         try {
             var orientation = HeaderParser.UNKNOWN_ORIENTATION
             var rotated = false
-            if (!fromDiskCache && HeaderParser.possiblyExif(source.magic)) {
+            if (HeaderParser.possiblyExif(source.magic)) {
                 orientation = source.orientation
                 // orientation input [5,8] mean rotate 90 or 270 degrees
                 rotated = orientation >= ExifInterface.ORIENTATION_TRANSPOSE
             }
-
-            if (!fromDiskCache && (clipType != NO_CLIP)) {
+            if (clipType != NO_CLIP) {
                 options.inJustDecodeBounds = true
                 source.decode(options)
                 if (options.outWidth <= 0 || options.outHeight <= 0) {
@@ -59,7 +62,6 @@ internal object Decoder {
                 }
                 options.inJustDecodeBounds = false
             }
-
             val dwidth = options.outWidth
             val dheight = options.outHeight
 
@@ -124,10 +126,22 @@ internal object Decoder {
                         val d = bw * vheight - vwidth * bh
                         if (d > 0) {
                             val dx = (bw - vwidth * bh / vheight.toFloat()) * 0.5f
-                            bitmap = Bitmap.createBitmap(bitmap, Math.round(dx), 0, Math.round(bw - 2 * dx), bh)
+                            bitmap = Bitmap.createBitmap(
+                                bitmap,
+                                Math.round(dx),
+                                0,
+                                Math.round(bw - 2 * dx),
+                                bh
+                            )
                         } else if (d < 0) {
                             val dy = (bh - vheight * bw / vwidth.toFloat()) * 0.5f
-                            bitmap = Bitmap.createBitmap(bitmap, 0, Math.round(dy), bw, Math.round(bh - 2 * dy))
+                            bitmap = Bitmap.createBitmap(
+                                bitmap,
+                                0,
+                                Math.round(dy),
+                                bw,
+                                Math.round(bh - 2 * dy)
+                            )
                         }
                     }
                 }
@@ -150,19 +164,6 @@ internal object Decoder {
             if (bitmap != null && orientation >= ExifInterface.ORIENTATION_FLIP_HORIZONTAL) {
                 bitmap = rotateImageExif(bitmap, orientation)
             }
-
-//            if (LogProxy.isDebug) {
-//                if (bitmap != null) {
-//                    Log.i(TAG, " allocated:" + Utils.formatSize(Utils.getBytesCount(bitmap).toLong())
-//                            + " v:" + request.viewWidth + "x" + request.viewHeight
-//                            + " d:" + dwidth + "x" + dheight
-//                            + " bitmap:" + bitmap.width + "x" + bitmap.height
-//                            + " source:" + source.javaClass.simpleName
-//                    )
-//                } else {
-//                    Log.e(TAG, "Decoder image failed. " + request.path)
-//                }
-//            }
         } finally {
             ByteArrayPool.recycleBasicArray(options.inTempStorage)
         }

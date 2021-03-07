@@ -2,6 +2,7 @@ package com.example.album_helper.datasource
 
 import android.database.Cursor
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.text.TextUtils
 import android.util.Log
@@ -20,20 +21,21 @@ import kotlinx.coroutines.CoroutineScope
 import java.io.File
 
 class ImageDataSource(
-    activity: FragmentActivity,
+    private val activity: FragmentActivity,
     private val scope: CoroutineScope,
-    path: String?,
+    private val path: String? = null,
     albumHelper: AlbumHelper,
     loadedListener: OnDataLoadedListener
 ) : LoaderManager.LoaderCallbacks<Cursor> {
+    companion object {
+        const val BATCH_COUNT = 5000//每达到该值，回调一次加载数据
+    }
+
     private var loadFinished: Boolean = false
-    private val path = path
-    private val QUERY_URI = MediaStore.Files.getContentUri("external")
-    private val activity = activity
-    private lateinit var imageFolders: ArrayList<ImageFolder>
+    private var imageFolders: ArrayList<ImageFolder>
     private val filterDir: String? = null
     private val albumHelper = albumHelper
-
+    private var id: Int = 0
     private var isBatch = false
 
     private val isExcute = false
@@ -45,48 +47,20 @@ class ImageDataSource(
         arrayOf("_display_name", "_data", "_size", "width", "height", "mime_type", "date_added")
     }
 
-    // =============================================
-    private val SELECTION_FOR_SINGLE_MEDIA_TYPE =
-        (MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
-                + " AND " + MediaStore.MediaColumns.SIZE + ">0"
-                + ") GROUP BY (bucket_id")
-    private val PROJECTION = arrayOf(
-        MediaStore.Files.FileColumns._ID,
-        "bucket_id",
-        "bucket_display_name",
-        MediaStore.MediaColumns.DATA,
-        "COUNT(*) AS " + "count"
-    )
-    private val SELECTION = ("(" + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
-            + " OR "
-            + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?)"
-            + " AND " + MediaStore.MediaColumns.SIZE + ">0"
-            + ") GROUP BY (bucket_id")
-    private val SELECTION_ARGS = arrayOf(
-        MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE.toString(),
-        MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO.toString()
-    )
-
     init {
         imageFolders = arrayListOf()
-        imageSupportFormat = with(albumHelper.getImageSupportFormat()) {
-            if (this != null) {
-                this
-            } else {
-                SupportType.getSupportImageType()
-            }
-        }
-//        filterDir=albumHelper.
+        imageSupportFormat = SupportType.getSupportImageType()
     }
 
     fun initLoader() {
         if (path == null) {
-            LoaderManager.getInstance(activity).initLoader(0, null, this)
+            id = 0
         } else {
             val bundle = Bundle()
             bundle.putString("path", path)
-            LoaderManager.getInstance(activity).initLoader(1, null, this)
+            id = 1
         }
+        LoaderManager.getInstance(activity).initLoader(id, null, this)
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<Cursor> {
@@ -115,7 +89,9 @@ class ImageDataSource(
             try {
                 fun dataBatchHandler(i: Int) {
                     if (i > 0 && i % 1000 == 0) {
-                        albumHelper.setImageFolders(imageFolders)
+//                        albumHelper.setImageFolders(imageFolders)
+                        if (albumHelper.getImageFolder() == null)
+                            albumHelper.setImageFolder(imageFolders[0])
                         loadedListener!!.onDataLoaded(imageFolders, false)
                     }
                 }
@@ -184,21 +160,7 @@ class ImageDataSource(
                             imageMimeType,
                             imageAddTime
                         )
-//                    imageItem.name = imageName
-//                    imageItem.path = imagePath
-//                    imageItem.size = imageSize
-//                    imageItem.width = imageWidth
-//                    imageItem.height = imageHeight
-//                    imageItem.mimeType = imageMimeType
-//                    imageItem.addTime = imageAddTime
-//                    imageItem.createTime = imageAddTime * 1000L
-//                    DateUtil.setTimeFormat(imageItem)
-//                    if (ImagePickerInner.getInstance().getSelectImageCount() > 0) {
-//                        imageItem.canVideoSelect = false
-//                    } else {
-//                        imageItem.canVideoSelect = true
-//                    }
-                        var fileExists=if (!TextUtils.isEmpty(imagePath)) File(
+                        val fileExists = if (!TextUtils.isEmpty(imagePath)) File(
                             imageItem.path!!
                         ).exists() else false
                         if (TextUtils.isEmpty(imageItem.path) || TextUtils.isEmpty(filterDir) || !imageItem.path!!.contains(
@@ -222,13 +184,6 @@ class ImageDataSource(
                                     }
                                 }
                                 if (mDataSupportListener != null) {
-//                                support = mDataSupportListener.isImageSupport(
-//                                    imagePath,
-//                                    imageWidth,
-//                                    imageHeight,
-//                                    imageSize,
-//                                    imageMimeType
-//                                )
                                     support =
                                         mDataSupportListener.isImageSupport()
                                     if (!support) {
@@ -244,10 +199,9 @@ class ImageDataSource(
                             if (!TextUtils.isEmpty(imagePath)) {
                                 val imageFile = File(imagePath)
                                 if (imageFile.exists()) {
-                                    val imageParentFile = imageFile.parentFile
                                     val imageFolder = ImageFolder(
-                                        name = imageParentFile.name,
-                                        path = imageParentFile.absolutePath
+                                        name = imageFile.parentFile?.name,
+                                        path = imageFile.parentFile?.absolutePath
                                     )
                                     if (!imageFolders.contains(imageFolder)) {
                                         val images: ArrayList<ImageItem> =
@@ -257,7 +211,13 @@ class ImageDataSource(
                                         }
                                         imageFolder.cover = imageItem
                                         imageFolder.images = images
-                                      imageFolders.add(imageFolder)
+                                        if (!TextUtils.isEmpty(imageFolder.path) && imageFolder.path!! == Environment.getExternalStoragePublicDirectory(
+                                                Environment.DIRECTORY_DCIM
+                                            ).absolutePath + "/Camera"
+                                        ) {
+                                            albumHelper.setImageFolder(imageFolder)
+                                        }
+                                        imageFolders.add(imageFolder)
                                     } else if (imageItem.size > 0L && !TextUtils.isEmpty(imageItem.path) && File(
                                             imageItem.path!!
                                         ).exists()
@@ -270,9 +230,9 @@ class ImageDataSource(
                                     }
                                 }
                             }
-                            if (count >= 5000) {
+                            if (count >= BATCH_COUNT) {//标记分段加载，超过5000
                                 ++i
-                               isBatch = true
+                                isBatch = true
                                 dataBatchHandler(i)
                             }
                         }
@@ -280,7 +240,8 @@ class ImageDataSource(
                 }
                 if (!isBatch) {
                     buildImageFolder(data!!, allImages)
-                    albumHelper.setImageFolders(imageFolders)
+                    if (albumHelper.getImageFolder() == null)
+                        albumHelper.setImageFolder(imageFolders[0])
                     loadedListener!!.onDataLoaded(
                         imageFolders,
                         true
@@ -288,7 +249,8 @@ class ImageDataSource(
                 } else if (!isExcute) {
                     isBatch = !isBatch
                     buildImageFolder(data!!, allImages)
-                    albumHelper.setImageFolders(imageFolders)
+                    if (albumHelper.getImageFolder() == null)
+                        albumHelper.setImageFolder(imageFolders[0])
                     loadedListener!!.onDataLoaded(
                         imageFolders,
                         true
@@ -298,15 +260,16 @@ class ImageDataSource(
                 var18.printStackTrace()
             } catch (var19: Exception) {
                 var19.printStackTrace()
-            }finally {
+            } finally {
                 data?.close()
             }
 
+        }.onSuccess {
+            LoaderManager.getInstance(activity).destroyLoader(id)
         }
     }
 
     override fun onLoaderReset(loader: Loader<Cursor>) {
-        TODO("Not yet implemented")
     }
 
 }

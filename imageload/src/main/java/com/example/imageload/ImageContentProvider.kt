@@ -1,4 +1,4 @@
-package com.example.imageload.cache
+package com.example.imageload
 
 import android.annotation.SuppressLint
 import android.content.ContentProvider

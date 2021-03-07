@@ -2,6 +2,7 @@ import android.widget.ImageView
 import com.example.imageload.loader.ImageLoader
 import com.example.imageload.loader.LoaderManager
 import com.example.imageload.request.ImageRequest
+import com.github.chrisbanes.photoview.PhotoView
 
 //@file:JvmName("ImageViews")
 //@file:Suppress("unused")
@@ -25,6 +26,7 @@ inline fun ImageView.load(
     imageLoader: ImageLoader = LoaderManager.getImageLoader(context),
     builder: ImageRequest.Builder.() -> Unit = {}
 ) = loadAny(uri, imageLoader, builder)
+
 //
 ///** @see ImageView.loadAny */
 //@JvmSynthetic
@@ -91,12 +93,13 @@ inline fun ImageView.load(
 // * @param imageLoader The [ImageLoader] that will be used to enqueue the [ImageRequest].
 // * @param builder An optional lambda to configure the request before it is enqueued.
 // */
+
 @JvmSynthetic
 inline fun ImageView.loadAny(
     data: Any?,
     imageLoader: ImageLoader = LoaderManager.getImageLoader(context),
     builder: ImageRequest.Builder.() -> Unit = {}
-){
+) {
     val request = ImageRequest.Builder(context)
         .data(data)
         .target(this)

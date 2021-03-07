@@ -1,28 +1,24 @@
 package com.example.album_helper.helper
 
-import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import com.example.album_helper.constant.ImageSelectMode
 import com.example.album_helper.model.ImageFolder
+import com.example.album_helper.model.ImageItem
 import com.example.album_helper.permission.Permissions
 import com.example.album_helper.permission.PermissionsCompat
 import com.example.album_helper.ui.SelectImageActivity
 
 class AlbumHelper(builder: Builder) {
-    private var imagefolders: List<ImageFolder>? = null
-    private val imageSelectMode = builder.imageSelectMode
-    private val sInstance: AlbumHelper = this
+    private var imagefolder: ImageFolder? = null
+    private var imageItem: ImageItem? = null
+    private val imageSelectMode: Int
 
-    private var imageSupportFormat: IntArray? = null
+    init {
+        imageSelectMode = builder.imageSelectMode
+    }
 
     companion object {
-        private lateinit var context: Context
-
-        //        fun with(activity:Activity):AlbumManager{
-//            context=activity.applicationContext
-//            return A
-//        }
         private var sInstance: AlbumHelper? = null
             get() {
                 if (field == null) {
@@ -39,39 +35,49 @@ class AlbumHelper(builder: Builder) {
     fun start(ctx: AppCompatActivity) {
         PermissionsCompat.Builder(ctx)
             .addPermissions(*Permissions.Group.STORAGE)
-            .rationale("R.string.tip_perm_request_storage")
+            .rationale("存储权限")
             .onGranted {
-                ctx.startActivity(Intent(ctx, SelectImageActivity::class.java).apply {
-
-                })
+                ctx.startActivity(Intent(ctx, SelectImageActivity::class.java))
             }
             .request()
 
     }
 
-    fun getImageSelectMode(): Int{
+    fun getImageSelectMode(): Int {
         return imageSelectMode
     }
 
-    fun getImageSupportFormat(): IntArray? {
-        return imageSupportFormat
+    /**
+     * 记录当前文件夹
+     */
+    internal fun setImageFolder(imageFolder: ImageFolder?) {
+        this.imagefolder = imageFolder
     }
 
-    fun setImageFolders(imageFolders: List<ImageFolder>) {
-        this.imagefolders = imageFolders
+    internal fun getImageFolder(): ImageFolder? {
+        return this.imagefolder
+    }
+
+    /**
+     * 记录当前文件
+     */
+    internal fun setImageItem(imageItem: ImageItem) {
+        this.imageItem = imageItem
+    }
+
+    internal fun getImageItem(): ImageItem? {
+        return this.imageItem
     }
 
     class Builder {
-        internal var imageSelectMode = ImageSelectMode.MODE_DEFAULT
-        internal var imageSupportFormat: IntArray? = null
-        internal var imageFolders: List<ImageFolder>? = null
+        var imageSelectMode: Int
 
-        fun setImageSelectMode(imageSelectMode: Int) {
-            this.imageSelectMode = imageSelectMode
+        init {
+            imageSelectMode = ImageSelectMode.MODE_DEFAULT
         }
 
-        fun setImageFolders(imageFolders: List<ImageFolder>) {
-            this.imageFolders = imageFolders
+        fun setImageSelectMode(imageSelectMode: Int) = apply {
+            this.imageSelectMode = imageSelectMode
         }
 
         fun build(): AlbumHelper {

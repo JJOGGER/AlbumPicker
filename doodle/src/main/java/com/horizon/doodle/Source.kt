@@ -186,7 +186,8 @@ internal abstract class Source : Closeable {
             if (request.cacheInterceptor != null) {
                 val cacheFile = request.cacheInterceptor!!.cachePath(url)
                 if (cacheFile != null &&
-                        (cacheFile.exists() || Downloader.downloadOnly(url, cacheFile) != null)) {
+                    (cacheFile.exists() || Downloader.downloadOnly(url, cacheFile) != null)
+                ) {
                     return valueOf(cacheFile)
                 }
             }
@@ -206,10 +207,20 @@ internal abstract class Source : Closeable {
                     }
                     valueOf(Downloader.getSource(builder.build()))
                 }
-                path.startsWith(ASSET_PREFIX) -> valueOf(Utils.context.assets.open(path.substring(ASSET_PREFIX_LENGTH)))
+                path.startsWith(ASSET_PREFIX) -> valueOf(
+                    Utils.context.assets.open(
+                        path.substring(
+                            ASSET_PREFIX_LENGTH
+                        )
+                    )
+                )
                 path.startsWith(FILE_PREFIX) -> valueOf(File(path.substring(FILE_PREFIX_LENGTH)))
-                else -> valueOf(Utils.context.contentResolver.openInputStream((request.uri
-                        ?: Uri.parse(path))))
+                else -> valueOf(
+                    Utils.context.contentResolver.openInputStream(
+                        (request.uri
+                            ?: Uri.parse(path))
+                    )
+                )
             }
         }
     } // end of companion
